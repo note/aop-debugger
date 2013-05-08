@@ -1,0 +1,33 @@
+@main("websocket") {
+
+<script type="text/javascript" charset="utf-8">
+	var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
+	var socket = new WS(
+			"@routes.Application.getWebsocket().webSocketURL(request)");
+
+	function sendMessage() {
+		socket.send(JSON.stringify({
+			text : "anything"
+		}));
+		console.log("hey");
+	}
+	
+	function receiveEvent(event) {
+        var data = JSON.parse(event.data);
+        console.log(data);
+	}
+	
+	$(document).ready(function(){
+		$("#nextButton").click(sendMessage);
+	});
+	
+	socket.onmessage = receiveEvent;
+</script>
+
+<div class="page-header">
+	<h1>
+		Hello
+	</h1>
+	<input type="button" id="nextButton" value="Next" />
+</div>
+}
