@@ -1,9 +1,13 @@
 @main("websocket") {
 
 <script type="text/javascript" charset="utf-8">
-	var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-	var socket = new WS(
-			"@routes.Application.getWebsocket().webSocketURL(request)");
+	var socket;
+	$(function() {
+		var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
+		socket = new WS(
+				"@routes.Application.getWebsocket().webSocketURL(request)");
+		socket.onmessage = receiveEvent;		
+	});
 
 	function sendMessage() {
 		socket.send(JSON.stringify({
@@ -21,7 +25,6 @@
 		$("#nextButton").click(sendMessage);
 	});
 	
-	socket.onmessage = receiveEvent;
 </script>
 
 <div class="page-header">

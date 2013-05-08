@@ -2,11 +2,11 @@ package debugger;
 
 import org.aspectj.lang.JoinPoint;
 
-import debugger.impl.DebuggerCLI;
+import debugger.impl.DebuggerWeb;
 
 public class Debugger {
 	private static Debugger appInstance = null;
-	private DebuggerInterface debuggerInterface = new DebuggerCLI();
+	private DebuggerInterface debuggerInterface = new DebuggerWeb();
 
 	public static Debugger getInstance() {
 		if (appInstance == null) {

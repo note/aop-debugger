@@ -3,14 +3,15 @@
 @main("Debugger"){
 <script type="text/javascript" charset="utf-8">
 	var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-	var socket = new WS(
-			"@routes.Application.debug(jarToDebug).webSocketURL(request)");
+// 	var socket = new WS(
+// 			"@routes.Application.getWebsocket().webSocketURL(request)");
+
+	var socket = new WS("ws://localhost:9000/debug?jarToDebug=simple.jar");
 
 	function sendMessage() {
 		socket.send(JSON.stringify({
 			text : "anything"
 		}));
-		console.log("hey");
 	}
 	
 	function receiveEvent(event) {

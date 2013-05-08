@@ -1,9 +1,7 @@
 package models;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -27,13 +25,21 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 	static ActorRef actor = Akka.system().actorOf(new Props(DebuggerWebsocketHandler.class));
 
-	public static void register(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket, String jarToDebug) {
+	public static void register(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket, final String jarToDebug) {
 		handleWebsockets(inWebsocket, outWebsocket);
-		invokeMainMethod(jarToDebug);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				invokeMainMethod(jarToDebug);
+			}
+		}).start();
 	}
 
 	private static void handleWebsockets(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket) {
 		out = outWebsocket;
+		ObjectNode breakpointJson = Json.newObject();
+		breakpointJson.put("methodName", "Ruszamy!");
+		out.write(breakpointJson);
 
 		inWebsocket.onMessage(new Callback<JsonNode>() {
 			public void invoke(JsonNode event) {
@@ -43,35 +49,18 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		});
 	}
 
-	private static void invokeMainMethod(String jarToDebug) {
+	private static void invokeMainMethod(final String jarToDebug) {
 		try {
-			URL[] url = { new URL("file://" + System.getProperty("user.dir") + File.separator + jarToDebug), new URL("file:///usr/share/java/aspectjrt.jar"),
-					new URL("file:///home/michal/Desktop/programming/code/java/aop-debugger/debugger.jar") };
-			URLClassLoader loader = new URLClassLoader(url);
+			URL[] url = { new URL("file://" + System.getProperty("user.dir") + File.separator + jarToDebug), //
+					new URL("file:///home/michal/Desktop/programming/code/java/aop-debugger/debugger.jar"), //
+					new URL("file:///usr/share/java/aspectjrt.jar") };
+			URLClassLoader loader = new URLClassLoader(url, DebuggerWebsocketHandler.class.getClassLoader());
 			WeavingURLClassLoader weaver = new WeavingURLClassLoader(loader);
 			Class<?> cls = loader.loadClass("to.be.debugged.Simple");
 			Method meth = cls.getMethod("main", String[].class);
 			String[] params = null;
 			meth.invoke(null, (Object) params);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

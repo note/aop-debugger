@@ -6,16 +6,18 @@ import java.io.IOException;
 import models.DebuggerWebsocketHandler;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ObjectNode;
 
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import views.html.debugger;
 import views.html.index;
 import views.html.program;
 import views.html.websocket;
-import views.html.debugger;
 
 import com.google.common.io.Files;
 
@@ -57,7 +59,9 @@ public class Application extends Controller {
 	public static WebSocket<JsonNode> getWebsocket() {
 		return new WebSocket<JsonNode>() {
 			public void onReady(WebSocket.In<JsonNode> in, WebSocket.Out<JsonNode> out) {
-				// DebuggerWebsocketHandler.register(in, out);
+				ObjectNode breakpointJson = Json.newObject();
+				breakpointJson.put("methodName", "Ruszamy!");
+				out.write(breakpointJson);
 			}
 		};
 	}
@@ -65,6 +69,9 @@ public class Application extends Controller {
 	public static WebSocket<JsonNode> debug(final String jarToDebug) {
 		return new WebSocket<JsonNode>() {
 			public void onReady(WebSocket.In<JsonNode> in, WebSocket.Out<JsonNode> out) {
+				ObjectNode breakpointJson = Json.newObject();
+				breakpointJson.put("methodName", "Ruszamy!");
+				out.write(breakpointJson);
 				DebuggerWebsocketHandler.register(in, out, jarToDebug);
 			}
 		};
