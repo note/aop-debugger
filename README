@@ -1,8 +1,8 @@
 To fetch all dependencies and setup eclipse project run:
-```play eclipse```
+    play eclipse
 
 To build debugger.jar run:
-```./compileDebugger.sh```
+    ./compileDebugger.sh
 
 To start application:
-```./run.sh```
+    ./run.sh
