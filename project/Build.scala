@@ -12,7 +12,9 @@ object ApplicationBuild extends Build {
     javaCore,
     javaJdbc,
     javaEbean,
-    "org.aspectj" % "aspectjweaver" % "1.7.2"
+    "org.aspectj" % "aspectjweaver" % "1.7.2",
+    "org.aspectj" % "aspectjrt" % "1.7.2"
+
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(

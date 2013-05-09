@@ -17,7 +17,6 @@ import play.mvc.WebSocket;
 import views.html.debugger;
 import views.html.index;
 import views.html.program;
-import views.html.websocket;
 
 import com.google.common.io.Files;
 
@@ -50,20 +49,6 @@ public class Application extends Controller {
 			flash("error", "Missing file");
 			return redirect(routes.Application.index());
 		}
-	}
-
-	public static Result websocket() {
-		return ok(websocket.render());
-	}
-
-	public static WebSocket<JsonNode> getWebsocket() {
-		return new WebSocket<JsonNode>() {
-			public void onReady(WebSocket.In<JsonNode> in, WebSocket.Out<JsonNode> out) {
-				ObjectNode breakpointJson = Json.newObject();
-				breakpointJson.put("methodName", "Ruszamy!");
-				out.write(breakpointJson);
-			}
-		};
 	}
 
 	public static WebSocket<JsonNode> debug(final String jarToDebug) {

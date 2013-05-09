@@ -6,8 +6,6 @@
 GET     /                           controllers.Application.index()
 GET 	/form	 					controllers.Application.showForm()
 POST 	/form	 					controllers.Application.upload()
-GET 	/websocket					controllers.Application.websocket()
-GET 	/getwebsocket				controllers.Application.getWebsocket()
 GET		/debug						controllers.Application.debug(jarToDebug: String)
 
 # Map static resources from the /public folder to the /assets URL path
