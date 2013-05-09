@@ -1,4 +1,8 @@
-This is your new Play 2.1 application
-=====================================
+To fetch all dependencies and setup eclipse project run:
+```play eclipse```
 
-This file will be packaged with your application, when using `play dist`.
+To build debugger.jar run:
+```./compileDebugger.sh```
+
+To start application:
+```./run.sh```
