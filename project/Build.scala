@@ -13,8 +13,8 @@ object ApplicationBuild extends Build {
     javaJdbc,
     javaEbean,
     "org.aspectj" % "aspectjweaver" % "1.7.2",
-    "org.aspectj" % "aspectjrt" % "1.7.2"
-
+    "org.aspectj" % "aspectjrt" % "1.7.2",
+    "com.google.guava" % "guava" % "14.0.1"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(

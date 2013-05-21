@@ -2,7 +2,9 @@ package controllers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
+import models.Clazz;
 import models.DebuggerWebsocketHandler;
 
 import org.codehaus.jackson.JsonNode;
@@ -14,11 +16,12 @@ import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import views.html.debugger;
 import views.html.index;
 import views.html.program;
 
 import com.google.common.io.Files;
+
+import controllers.helpers.ReflectionHelper;
 
 public class Application extends Controller {
 
@@ -34,17 +37,10 @@ public class Application extends Controller {
 		MultipartFormData body = request().body().asMultipartFormData();
 		FilePart uploadedJar = body.getFile("jarFile");
 		if (uploadedJar != null) {
-			String fileName = uploadedJar.getFilename();
-			String contentType = uploadedJar.getContentType();
-			File uploadedFile = uploadedJar.getFile();
-			File copiedFile = new File("." + File.separator + "uploads" + File.separator + uploadedJar.getFilename());
-			try {
-				Files.move(uploadedFile, copiedFile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return ok(debugger.render(uploadedJar.getFilename()));
+			File copiedFile = copyToUploads(uploadedJar);
+
+			Set<Clazz> classesFromJar = ReflectionHelper.getClassesFromJar(copiedFile);
+			return ok(Json.toJson(classesFromJar));
 		} else {
 			flash("error", "Missing file");
 			return redirect(routes.Application.index());
@@ -60,6 +56,24 @@ public class Application extends Controller {
 				DebuggerWebsocketHandler.register(in, out, jarToDebug);
 			}
 		};
+	}
+
+	private static File copyToUploads(FilePart uploadedFilePart) {
+		String fileName = uploadedFilePart.getFilename();
+		String contentType = uploadedFilePart.getContentType();
+		File uploadedFile = uploadedFilePart.getFile();
+		File copiedFile = new File(getUploadsPath() + uploadedFilePart.getFilename());
+		try {
+			Files.move(uploadedFile, copiedFile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return copiedFile;
+	}
+
+	private static String getUploadsPath() {
+		return "." + File.separator + "uploads" + File.separator;
 	}
 
 }
