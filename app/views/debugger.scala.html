@@ -2,19 +2,33 @@
 
 @main("Debugger"){
 
+<div class="row-fluid">
+    <div class="span8">
+        <h3>Current breakpoint</h3>
+        <input type="button" id="nextButton" value="Next breakpoint"/>
 
-<div class="page-header">
-    <input type="button" id="nextButton" value="Next"/>
-    <div><span>Method:</span><span id="methodName"></span> </div>
-    <ul id="arguments"></ul>
-    <textarea id="stackTrace"></textarea>
-
+        <div><span>Method:</span><strong id="methodName"></strong></div>
+        <div>
+            <h4>Arguments</h4>
+            <ul id="arguments"></ul>
+        </div>
+        <div>
+            <h4>Stacktrace</h4>
+        <textarea id="stackTrace"></textarea>
+        </div>
+    </div>
+    <div class="span4">
+        <h3>Breakpoints selector</h3>
+        <div id="tree"></div>
+    </div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
     (function ($) {
         var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
         var socket = new WS("@routes.Application.debug(jarToDebug).webSocketURL(request)");
+
+        var methodSelector = new MethodSelector($('#tree'));
 
         var stackTrace = $('#stackTrace'),
                 methodName = $('#methodName'),

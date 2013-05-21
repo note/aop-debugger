@@ -1,11 +1,14 @@
-@import helper._
 
-@helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
-    
-    <input type="file" name="jarFile">
-    
-    <p>
-        <input type="submit">
-    </p>
-    
+
+@import helper._
+@main("Form"){
+    @helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
+
+        <input type="file" name="jarFile">
+
+        <p>
+            <input type="submit">
+        </p>
+
+    }
 }
