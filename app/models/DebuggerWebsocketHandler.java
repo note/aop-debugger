@@ -1,6 +1,7 @@
 package models;
 
-import java.io.File;
+import helpers.PathHelpers;
+
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,15 +55,8 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 	private static void invokeMainMethod(final String jarToDebug) {
 		try {
-			// URL[] url = { new URL("file://" + System.getProperty("user.dir")
-			// + File.separator + jarToDebug), //
-			// new
-			// URL("file:///home/michal/Desktop/programming/code/java/aop-debugger/debugger.jar"),
-			// //
-			// new URL("file:///usr/share/java/aspectjrt.jar") };
-			URL[] url = { new URL(getUploadsPath() + jarToDebug), //
-					new URL(getPwd() + "debugger.jar") }; //
-			// new URL("file:///usr/share/java/aspectjrt.jar") };
+			URL[] url = { new URL(PathHelpers.getUploadsURL() + jarToDebug), //
+					new URL(PathHelpers.getPwdURL() + "debugger.jar") }; //
 			URLClassLoader loader = new URLClassLoader(url, DebuggerWebsocketHandler.class.getClassLoader());
 			WeavingURLClassLoader weaver = new WeavingURLClassLoader(loader);
 			Class<?> cls = loader.loadClass("to.be.debugged.Simple");
@@ -73,14 +67,6 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	private static String getUploadsPath() {
-		return getPwd() + "uploads" + File.separator;
-	}
-
-	private static String getPwd() {
-		return "file://" + System.getProperty("user.dir") + File.separator;
 	}
 
 	public static void sendBreakpointMessage(JoinPoint point, StackTraceElement[] stack, Thread thread) {
