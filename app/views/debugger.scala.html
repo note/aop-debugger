@@ -1,32 +1,51 @@
 @(jarToDebug: String, classes: Set[Clazz])
 
 @main("Debugger"){
-<script type="text/javascript" charset="utf-8">
-	var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-	var socket = new WS("@routes.Application.debug(jarToDebug).webSocketURL(request)");
 
-	function sendMessage() {
-		socket.send(JSON.stringify({
-			text : "anything"
-		}));
-	}
-	
-	function receiveEvent(event) {
-        var data = JSON.parse(event.data);
-        console.log(data);
-	}
-	
-	$(document).ready(function(){
-		$("#nextButton").click(sendMessage);
-	});
-	
-	socket.onmessage = receiveEvent;
-</script>
 
 <div class="page-header">
-	<h1>
-		Hello
-	</h1>
-	<input type="button" id="nextButton" value="Next" />
+    <input type="button" id="nextButton" value="Next"/>
+    <div><span>Method:</span><span id="methodName"></span> </div>
+    <ul id="arguments"></ul>
+    <textarea id="stackTrace"></textarea>
+
 </div>
+
+<script type="text/javascript" charset="utf-8">
+    (function ($) {
+        var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
+        var socket = new WS("@routes.Application.debug(jarToDebug).webSocketURL(request)");
+
+        var stackTrace = $('#stackTrace'),
+                methodName = $('#methodName'),
+                args = $('#arguments');
+
+        var clear = function(){
+            args.html('');
+        };
+
+        var sendMessage = function () {
+            socket.send(JSON.stringify({
+                text: "anything"
+            }));
+            clear();
+        };
+
+        var receiveEvent = function (event) {
+            var data = JSON.parse(event.data);
+            console.log(data);
+            stackTrace.val(data.stackTrace.join("\n,"));
+            methodName.text(data.signature);
+            $.each(data.arguments,function(_,argument){
+              $('<li><input value="' + argument + '" disabled /></li>').appendTo(args);
+            });
+        };
+
+        $(document).ready(function () {
+            $("#nextButton").click(sendMessage);
+        });
+
+        socket.onmessage = receiveEvent;
+    })(jQuery);
+</script>
 }

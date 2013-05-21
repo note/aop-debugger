@@ -50,9 +50,6 @@ public class Application extends Controller {
 	public static WebSocket<JsonNode> debug(final String jarToDebug) {
 		return new WebSocket<JsonNode>() {
 			public void onReady(WebSocket.In<JsonNode> in, WebSocket.Out<JsonNode> out) {
-				ObjectNode breakpointJson = Json.newObject();
-				breakpointJson.put("methodName", "Ruszamy!");
-				out.write(breakpointJson);
 				DebuggerWebsocketHandler.register(in, out, jarToDebug);
 			}
 		};

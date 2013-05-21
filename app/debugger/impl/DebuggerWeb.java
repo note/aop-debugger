@@ -1,8 +1,5 @@
 package debugger.impl;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import models.DebuggerWebsocketHandler;
 
 import org.aspectj.lang.JoinPoint;
@@ -10,7 +7,6 @@ import org.aspectj.lang.JoinPoint;
 import debugger.DebuggerInterface;
 
 public class DebuggerWeb implements DebuggerInterface {
-	private Lock lock = new ReentrantLock();
 
 	//TODO: add override annotation (removed in hurry - ajc complained)
 	public void setup() {
@@ -19,17 +15,17 @@ public class DebuggerWeb implements DebuggerInterface {
 	}
 
 	public void takeCommand(JoinPoint point, StackTraceElement[] stack) {
-		DebuggerWebsocketHandler.sendBreakpointMessage(point, stack, Thread.currentThread());
-		try {
-			while (true)
-				Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			return;
+		Thread thread = Thread.currentThread();
+		DebuggerWebsocketHandler.sendBreakpointMessage(point, stack, thread);
+		synchronized(thread){
+			try {
+				Thread.currentThread().wait();
+			} catch (InterruptedException e) {
+			}
 		}
 	}
 
 	public void takeDown() {
-		// TODO Auto-generated method stub
 
 	}
 

@@ -19,6 +19,7 @@ public class Debugger {
 	}
 
 	public void takeControl(JoinPoint point, StackTraceElement[] stack) {
+		
 		debuggerInterface.takeCommand(point, stack);
 	}
 
