@@ -4,11 +4,16 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.weaver.loadtime.WeavingURLClassLoader;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
+
+import debugger.impl.DebuggerWeb;
 
 import play.libs.Akka;
 import play.libs.F.Callback;
@@ -37,9 +42,7 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 	private static void handleWebsockets(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket) {
 		out = outWebsocket;
-		ObjectNode breakpointJson = Json.newObject();
-		breakpointJson.put("methodName", "Ruszamy!");
-		out.write(breakpointJson);
+
 
 		inWebsocket.onMessage(new Callback<JsonNode>() {
 			public void invoke(JsonNode event) {
@@ -84,13 +87,28 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		debuggedThread = thread;
 		ObjectNode breakpointJson = Json.newObject();
 		breakpointJson.put("methodName", point.getSignature().getName());
+		breakpointJson.put("signature", point.getSignature().toLongString());
+		ArrayNode arguments = breakpointJson.putArray("arguments");
+		ArrayNode stackTrace = breakpointJson.putArray("stackTrace");
+		for(Object o : point.getArgs()) {
+			arguments.add(o.toString());
+		}
+		for(StackTraceElement o : stack) {
+			stackTrace.add(o.toString());
+		}
+		SourceLocation location = point.getSourceLocation();
+		breakpointJson.put("sourceLocation", location.getFileName() + ":" + location.getLine());
+
 		out.write(breakpointJson);
 	}
+	
 
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof Message) {
-			debuggedThread.interrupt();
+			synchronized(debuggedThread) {
+				debuggedThread.notify();
+			}
 		}
 	}
 
