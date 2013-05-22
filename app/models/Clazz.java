@@ -1,23 +1,34 @@
 package models;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
-public class Clazz {
-	private Set<MyMethod> methods;
+import com.google.common.collect.Sets;
+
+public class Clazz implements Type {
+	private Set<MyMethod> methods = Sets.newHashSet();
 	private Class<?> clazz;
 
 	public Clazz(ZipEntry zipEntry, ClassLoader loader) {
 		try {
 			String className = fullyQualifiedFromPath(zipEntry.getName());
 			clazz = loader.loadClass(className);
+
+			initializeMethods();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void initializeMethods() {
+		Method[] fetchedMethods = clazz.getDeclaredMethods();
+		for (Method method : fetchedMethods)
+			methods.add(new MyMethod(method));
 	}
 
 	@Override
