@@ -24,12 +24,12 @@
                 <div class="klass">
                     <input type="checkbox" /> <span class="name">@klass.getName()</span>
                     <div class="methods">
-
-                            <div class="method">
-                                <input type="checkbox" />
-                                <span class="name">Metoda</span>
-                                </div>
-
+						@for(method <- klass.getMethods()) {
+	                         <div class="method">
+	                             <input type="checkbox" />
+	                             <span class="name">@method</span>
+	                         </div>
+						}
                     </div>
                 </div>
             }

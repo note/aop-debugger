@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class MyMethod {
@@ -35,6 +36,14 @@ public class MyMethod {
 		return returnType;
 	}
 
+	@Override
+	public String toString() {
+		String result = getName() + "(";
+		result += Joiner.on(", ").join(argumentsTypes);
+		result += "): " + returnType;
+		return result;
+	}
+
 	private void initializeScopeModifier() {
 		int modifiers = method.getModifiers();
 		if (Modifier.isPrivate(modifiers)) {
@@ -57,4 +66,5 @@ public class MyMethod {
 		for (Class<?> clazz : classes)
 			argumentsTypes.add(new SimpleType(clazz));
 	}
+
 }

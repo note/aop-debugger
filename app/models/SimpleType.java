@@ -15,13 +15,16 @@ public class SimpleType implements Type {
 	}
 
 	public SimpleType(Class<?> clazz) {
-		packageName = (clazz.getPackage() != null) ? clazz.getPackage().getName() : "";
+		packageName = (clazz.getPackage() != null) ? clazz.getPackage().getName() : null;
 		name = clazz.getSimpleName();
 	}
 
 	@Override
 	public String toString() {
-		return packageName + "." + name;
+		if (packageName == null)
+			return name;
+		else
+			return packageName + "." + name;
 	}
 
 }
