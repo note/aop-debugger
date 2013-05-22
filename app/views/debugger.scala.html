@@ -19,7 +19,21 @@
     </div>
     <div class="span4">
         <h3>Breakpoints selector</h3>
-        <div id="tree"></div>
+        <div id="tree">
+            @for(klass <- classes) {
+                <div class="klass">
+                    <input type="checkbox" /> <span class="name">@klass.getName()</span>
+                    <div class="methods">
+
+                            <div class="method">
+                                <input type="checkbox" />
+                                <span class="name">Metoda</span>
+                                </div>
+
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 </div>
 

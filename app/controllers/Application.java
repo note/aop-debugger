@@ -16,6 +16,7 @@ import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
 import play.mvc.WebSocket;
+import views.html.debugger;
 import views.html.index;
 import views.html.program;
 
@@ -40,7 +41,7 @@ public class Application extends Controller {
 			File copiedFile = copyToUploads(uploadedJar);
 
 			Set<Clazz> classesFromJar = ReflectionHelper.getClassesFromJar(copiedFile);
-			return ok(Json.toJson(classesFromJar));
+			return ok(debugger.render(uploadedJar.getFilename(), classesFromJar));
 		} else {
 			flash("error", "Missing file");
 			return redirect(routes.Application.index());

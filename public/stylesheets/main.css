@@ -12,3 +12,26 @@ body {
 #arguments {
     list-style-type: none;
 }
+
+.methods {
+    margin-left: 20px;
+}
+
+.klass > .name {
+
+    background-image: url(../images/classes.gif);
+    background-repeat: no-repeat;
+    padding-left: 18px;
+}
+
+.method > .name {
+
+    background-image: url(../images/brkpi_obj.gif);
+    background-repeat: no-repeat;
+    padding-left: 18px;
+}
+
+#tree input {
+    margin: 0;
+}
+
