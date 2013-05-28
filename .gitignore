@@ -1,7 +1,6 @@
-logs
+**/logs
 project/project
-project/target
-target
+**/target
 tmp
 .history
 dist
@@ -12,6 +11,6 @@ dist
 /.classpath
 /.project
 /RUNNING_PID
-/.settings
-uploads/*.jar
-.target
+**/.settings
+aop-debugger/uploads/*.jar
+**/.target
