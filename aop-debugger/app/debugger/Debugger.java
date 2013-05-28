@@ -1,5 +1,7 @@
 package debugger;
 
+import java.util.ArrayList;
+
 import org.aspectj.lang.JoinPoint;
 
 import debugger.impl.DebuggerWeb;
@@ -22,7 +24,16 @@ public class Debugger {
 
 	public void takeControl(JoinPoint point, StackTraceElement[] stack) {
 		if(shouldStop(point))
-			debuggerInterface.takeCommand(point, stack);
+			debuggerInterface.takeCommand(point, clearStack(stack));
+	}
+	
+	StackTraceElement[] clearStack(StackTraceElement[] stack) {
+		StackTraceElement[] newStack = new StackTraceElement[stack.length - 10];
+		for(int i = 2, j = 0; i < stack.length - 8; i++, j++){
+			newStack[j] = stack[i];
+		}
+		return newStack;
+		// Primitive approach: remove first 2 and last 8 lines 
 	}
 	
 	public boolean shouldStop(JoinPoint point) {
