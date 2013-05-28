@@ -17,18 +17,37 @@ public class ReflectionHelper {
 	public static Set<Clazz> getClassesFromJar(File jarFile) {
 		Set<Clazz> classes = null;
 		try {
-			ZipInputStream zip = new ZipInputStream(jarFile.toURI().toURL().openStream());
-			URL[] url = { jarFile.toURI().toURL() };
+			classes = getClassesFromJar(jarFile.toURI().toURL());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return classes;
+	}
+
+	public static Set<Clazz> getClassesFromJar(URL jarFileURL) {
+		Set<Clazz> classes = null;
+		try {
+			ZipInputStream zip = new ZipInputStream(jarFileURL.openStream());
+			URL[] url = { jarFileURL };
 			URLClassLoader loader = new URLClassLoader(url);
 			return getClassesFromStream(zip, loader);
-		} catch (MalformedURLException e) {// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return classes;
+	}
+
+	public static Set<Clazz> getMainClassesFromJar(URL jarFileURL) {
+		Set<Clazz> classes = getClassesFromJar(jarFileURL);
+		Set<Clazz> mainClasses = Sets.newHashSet();
+		for (Clazz clazz : classes) {
+			if (clazz.containsMainMethod())
+				mainClasses.add(clazz);
+		}
+		return mainClasses;
 	}
 
 	private static Set<Clazz> getClassesFromStream(ZipInputStream zipInputStream, ClassLoader classLoader) {

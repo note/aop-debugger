@@ -8,7 +8,7 @@ import debugger.DebuggerInterface;
 
 public class DebuggerWeb implements DebuggerInterface {
 
-	//TODO: add override annotation (removed in hurry - ajc complained)
+	// TODO: add override annotation (removed in hurry - ajc complained)
 	public void setup() {
 		// TODO Auto-generated method stub
 
@@ -17,7 +17,7 @@ public class DebuggerWeb implements DebuggerInterface {
 	public void takeCommand(JoinPoint point, StackTraceElement[] stack) {
 		Thread thread = Thread.currentThread();
 		DebuggerWebsocketHandler.sendBreakpointMessage(point, stack, thread);
-		synchronized(thread){
+		synchronized (thread) {
 			try {
 				Thread.currentThread().wait();
 			} catch (InterruptedException e) {

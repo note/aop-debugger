@@ -55,8 +55,20 @@ public class Clazz implements Type {
 		return clazz.getSimpleName();
 	}
 
+	public String getQualifiedName() {
+		return getPackageName() + "." + getName();
+	}
+
 	public Set<MyMethod> getMethods() {
 		return methods;
+	}
+
+	public boolean containsMainMethod() {
+		for (MyMethod method : methods) {
+			if (method.isMainMethod())
+				return true;
+		}
+		return false;
 	}
 
 	private String fullyQualifiedFromPath(String path) {

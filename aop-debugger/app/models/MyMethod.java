@@ -67,4 +67,11 @@ public class MyMethod {
 			argumentsTypes.add(new SimpleType(clazz));
 	}
 
+	private String expectedMainMethodName() {
+		return "public static void " + method.getDeclaringClass().getName() + ".main(java.lang.String[])";
+	}
+
+	public boolean isMainMethod() {
+		return expectedMainMethodName().equals(method.toString());
+	}
 }

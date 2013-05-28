@@ -5,7 +5,7 @@ import helpers.PathHelpers;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
+import java.util.Set;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.SourceLocation;
@@ -14,8 +14,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 
-import debugger.impl.DebuggerWeb;
-
 import play.libs.Akka;
 import play.libs.F.Callback;
 import play.libs.Json;
@@ -23,6 +21,7 @@ import play.mvc.WebSocket;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import controllers.helpers.ReflectionHelper;
 
 public class DebuggerWebsocketHandler extends UntypedActor {
 	private static WebSocket.Out<JsonNode> out;
@@ -44,7 +43,6 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 	private static void handleWebsockets(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket) {
 		out = outWebsocket;
 
-
 		inWebsocket.onMessage(new Callback<JsonNode>() {
 			public void invoke(JsonNode event) {
 				System.out.println("Otrzymano wiadomosc");
@@ -55,11 +53,15 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 	private static void invokeMainMethod(final String jarToDebug) {
 		try {
-			URL[] url = { new URL(PathHelpers.getUploadsURL() + jarToDebug), //
-					new URL(PathHelpers.getPwdURL() + "debugger.jar") }; //
+			URL jarToDebugURL = new URL(PathHelpers.getUploadsURL() + jarToDebug);
+			URL[] url = { jarToDebugURL, new URL(PathHelpers.getPwdURL() + "debugger.jar") };
 			URLClassLoader loader = new URLClassLoader(url, DebuggerWebsocketHandler.class.getClassLoader());
 			WeavingURLClassLoader weaver = new WeavingURLClassLoader(loader);
-			Class<?> cls = loader.loadClass("to.be.debugged.Simple");
+			Set<Clazz> classes = ReflectionHelper.getMainClassesFromJar(jarToDebugURL);
+			if (classes.size() == 0)
+				throw new IllegalArgumentException("Uploaded jar does not contain main method");
+			String classNameWithMain = classes.iterator().next().getQualifiedName();
+			Class<?> cls = loader.loadClass(classNameWithMain);
 			Method meth = cls.getMethod("main", String[].class);
 			String[] params = null;
 			meth.invoke(null, (Object) params);
@@ -76,10 +78,10 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		breakpointJson.put("signature", point.getSignature().toLongString());
 		ArrayNode arguments = breakpointJson.putArray("arguments");
 		ArrayNode stackTrace = breakpointJson.putArray("stackTrace");
-		for(Object o : point.getArgs()) {
+		for (Object o : point.getArgs()) {
 			arguments.add(o.toString());
 		}
-		for(StackTraceElement o : stack) {
+		for (StackTraceElement o : stack) {
 			stackTrace.add(o.toString());
 		}
 		SourceLocation location = point.getSourceLocation();
@@ -87,12 +89,11 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 		out.write(breakpointJson);
 	}
-	
 
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof Message) {
-			synchronized(debuggedThread) {
+			synchronized (debuggedThread) {
 				debuggedThread.notify();
 			}
 		}
