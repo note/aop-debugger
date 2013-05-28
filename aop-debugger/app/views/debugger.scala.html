@@ -23,12 +23,12 @@
         <div id="tree">
             @for(klass <- classes) {
                 <div class="klass">
-                    <input type="checkbox" data-package=@klass.getPackageName() data-klass=@klass.getName() checked />
+                    <input type="checkbox" data-package=@klass.getPackageName() data-klass=@klass.getName() checked autocomplete="off"/>
                     <span class="name">@klass.getName()</span>
                     <div class="methods">
 						@for(method <- klass.getMethods()) {
 	                         <div class="method">
-	                             <input data-package=@klass.getPackageName() data-klass=@klass.getName() data-method=@method type="checkbox" checked/>
+	                             <input data-package=@klass.getPackageName() data-klass=@klass.getName() data-method=@method type="checkbox" checked autocomplete="off"/>
 	                             <span class="name">@method</span>
 	                         </div>
 						}
@@ -37,7 +37,7 @@
             }
         </div>
         <h3>Options</h3>
-        <input type="checkbox" id="outside-debug" checked><span>Break outside package</span>
+        <input type="checkbox" id="outside-debug" checked autocomplete="off"><span>Break outside package</span>
     </div>
 </div>
 
