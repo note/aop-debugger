@@ -47,6 +47,8 @@
         },
         clear: function () {
             this.argsEl.html('');
+            this.methodNameEl.html('');
+            this.stackTraceEl.val('');
         }
     };
 

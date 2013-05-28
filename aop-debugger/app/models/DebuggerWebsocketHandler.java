@@ -14,6 +14,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 
+import debugger.Debugger;
 import debugger.impl.DebuggerWeb;
 
 import play.libs.Akka;
@@ -98,10 +99,42 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 			if(action.equals("continue")) {
 				continueDebugger();
 			}
-//			if(action.equals("breakpoint")) {
-//				JsonNode breakPointData = json.get("data");
-//				// TODO: get classname, packagename etc. and push it to debugger
-//			}
+			if(action.equals("breakpoint")) {
+				setBreakpoint(json);
+			}
+			if(action.equals("outside-debug")) {
+				setOutsideDebugging(json);
+			}
+		}
+	}
+	
+	private void setOutsideDebugging(JsonNode json) {
+		Debugger debugger = Debugger.getInstance();
+		System.out.println(json.get("enabled").asBoolean());
+		debugger.debugOutsideJar = json.get("enabled").asBoolean();
+	}
+
+	private void setBreakpoint(JsonNode json) {
+		Debugger debugger = Debugger.getInstance();
+		
+		JsonNode breakPointData = json.get("data");
+		String packageName = breakPointData.get("package").getTextValue();
+		String className = breakPointData.get("klass").getTextValue();
+		Boolean enabled = breakPointData.get("enabled").getBooleanValue();
+		String fullName;
+		if(breakPointData.has("method")) {
+			String methodName = breakPointData.get("method").getTextValue();
+			fullName = packageName + "." + className + "." + methodName;
+			if(!enabled)
+				debugger.forbiddenMethods.add(fullName);
+			else
+				debugger.forbiddenMethods.remove(fullName);
+		} else {
+			fullName = packageName + "." + className;
+			if(!enabled)
+				debugger.forbiddenClasses.add(fullName);
+			else
+				debugger.forbiddenClasses.remove(fullName);
 		}
 	}
 	

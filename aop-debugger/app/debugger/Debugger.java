@@ -1,6 +1,8 @@
 package debugger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.aspectj.lang.JoinPoint;
 
@@ -9,6 +11,12 @@ import debugger.impl.DebuggerWeb;
 public class Debugger {
 	private static Debugger appInstance = null;
 	private DebuggerInterface debuggerInterface = new DebuggerWeb();
+	
+	public boolean stepMode = false;
+	public boolean debugOutsideJar = true;
+	
+	public Set<String> forbiddenClasses = new HashSet<String>();
+	public Set<String> forbiddenMethods = new HashSet<String>();
 
 	public static Debugger getInstance() {
 		if (appInstance == null) {
@@ -37,10 +45,19 @@ public class Debugger {
 	}
 	
 	public boolean shouldStop(JoinPoint point) {
-		//		String packageName = point.getTarget().getClass().getPackage().getName();
-//		String className = point.getTarget().getClass().getSimpleName();
-//		String methodName = point.getSignature().getName();
-//		System.out.println(packageName + "  " + className + "  " + methodName);
+		if(stepMode) return true;
+		Class type = point.getSignature().getDeclaringType();
+		String className = type.getSimpleName();
+		String packageName = type.getPackage().getName();
+		String methodName = point.getSignature().getName();
+		if(forbiddenClasses.contains(packageName + "." + className)) return false;
+		if(forbiddenMethods.contains(packageName + "." + className + "." + methodName)) return false;
+		String jarPackage = "to.be.debugged"; // TODO unhardcode it
+		if(!debugOutsideJar) {
+			if(! packageName.startsWith(jarPackage))
+				return false;
+		}
+		
 		return true;
 	}
 
