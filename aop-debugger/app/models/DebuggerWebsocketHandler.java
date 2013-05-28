@@ -94,14 +94,14 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		if (message instanceof Message) {
 			JsonNode json = ((Message) message).data;
 			String action = json.get("action").getTextValue();
-			if(action == "continue") {
+			
+			if(action.equals("continue")) {
 				continueDebugger();
-				return;
 			}
-			if(action == "breakpoint") {
-				JsonNode breakPointData = json.get("data");
-				// TODO: get classname, packagename etc. and push it to debugger
-			}
+//			if(action.equals("breakpoint")) {
+//				JsonNode breakPointData = json.get("data");
+//				// TODO: get classname, packagename etc. and push it to debugger
+//			}
 		}
 	}
 	

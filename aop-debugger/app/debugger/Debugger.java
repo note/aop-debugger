@@ -21,8 +21,16 @@ public class Debugger {
 	// TODO: Add methods to ignore/enable classes and methods
 
 	public void takeControl(JoinPoint point, StackTraceElement[] stack) {
-		
-		debuggerInterface.takeCommand(point, stack);
+		if(shouldStop(point))
+			debuggerInterface.takeCommand(point, stack);
+	}
+	
+	public boolean shouldStop(JoinPoint point) {
+		//		String packageName = point.getTarget().getClass().getPackage().getName();
+//		String className = point.getTarget().getClass().getSimpleName();
+//		String methodName = point.getSignature().getName();
+//		System.out.println(packageName + "  " + className + "  " + methodName);
+		return true;
 	}
 
 	public void setInterface(DebuggerInterface debuggerInterface) {
