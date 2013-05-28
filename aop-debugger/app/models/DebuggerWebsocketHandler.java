@@ -46,9 +46,9 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 
 		inWebsocket.onMessage(new Callback<JsonNode>() {
-			public void invoke(JsonNode event) {
+			public void invoke(JsonNode data) {
 				System.out.println("Otrzymano wiadomosc");
-				actor.tell(new Message());
+				actor.tell(new Message(data));
 			}
 		});
 	}
@@ -92,13 +92,31 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof Message) {
-			synchronized(debuggedThread) {
-				debuggedThread.notify();
+			JsonNode json = ((Message) message).data;
+			String action = json.get("action").getTextValue();
+			if(action == "continue") {
+				continueDebugger();
+				return;
 			}
+			if(action == "breakpoint") {
+				JsonNode breakPointData = json.get("data");
+				// TODO: get classname, packagename etc. and push it to debugger
+			}
+		}
+	}
+	
+	private void continueDebugger() {
+		synchronized(debuggedThread) {
+			debuggedThread.notify();
 		}
 	}
 
 	public static class Message {
+		JsonNode data;
+
+		public Message(JsonNode data) {
+			this.data = data;
+		}
 	}
 
 }

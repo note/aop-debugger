@@ -17,6 +17,8 @@ public class Debugger {
 
 	private Debugger() {
 	}
+	
+	// TODO: Add methods to ignore/enable classes and methods
 
 	public void takeControl(JoinPoint point, StackTraceElement[] stack) {
 		

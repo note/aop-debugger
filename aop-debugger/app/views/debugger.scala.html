@@ -2,6 +2,7 @@
 
 @main("Debugger"){
 
+<script type="text/html" id="ws-url">@routes.Application.debug(jarToDebug).webSocketURL(request)</script>
 <div class="row-fluid">
     <div class="span8">
         <h3>Current breakpoint</h3>
@@ -22,11 +23,12 @@
         <div id="tree">
             @for(klass <- classes) {
                 <div class="klass">
-                    <input type="checkbox" /> <span class="name">@klass.getName()</span>
+                    <input type="checkbox" data-package=@klass.getPackageName() data-klass=@klass.getName() checked />
+                    <span class="name">@klass.getName()</span>
                     <div class="methods">
 						@for(method <- klass.getMethods()) {
 	                         <div class="method">
-	                             <input type="checkbox" />
+	                             <input data-package=@klass.getPackageName() data-klass=@klass.getName() data-method=@method type="checkbox" checked/>
 	                             <span class="name">@method</span>
 	                         </div>
 						}
@@ -37,43 +39,4 @@
     </div>
 </div>
 
-<script type="text/javascript" charset="utf-8">
-    (function ($) {
-        var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
-        var socket = new WS("@routes.Application.debug(jarToDebug).webSocketURL(request)");
-
-        var methodSelector = new MethodSelector($('#tree'));
-
-        var stackTrace = $('#stackTrace'),
-                methodName = $('#methodName'),
-                args = $('#arguments');
-
-        var clear = function(){
-            args.html('');
-        };
-
-        var sendMessage = function () {
-            socket.send(JSON.stringify({
-                text: "anything"
-            }));
-            clear();
-        };
-
-        var receiveEvent = function (event) {
-            var data = JSON.parse(event.data);
-            console.log(data);
-            stackTrace.val(data.stackTrace.join("\n,"));
-            methodName.text(data.signature);
-            $.each(data.arguments,function(_,argument){
-              $('<li><input value="' + argument + '" disabled /></li>').appendTo(args);
-            });
-        };
-
-        $(document).ready(function () {
-            $("#nextButton").click(sendMessage);
-        });
-
-        socket.onmessage = receiveEvent;
-    })(jQuery);
-</script>
 }
