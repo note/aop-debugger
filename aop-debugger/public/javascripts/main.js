@@ -6,10 +6,15 @@
 
     connector.bindCallback($.proxy(stackTraceView, 'onData'));
 
-    $("#nextButton").click(function () {
+    $("#stepButton").click(function () {
+        connector.sendMessage({action: 'step'});
+        stackTraceView.clear();
+    });
+    $("#continueButton").click(function () {
         connector.sendMessage({action: 'continue'});
         stackTraceView.clear();
     });
+
 
     $("#outside-debug").click(function () {
         connector.sendMessage({action: 'outside-debug', enabled: $(this).is(':checked')});

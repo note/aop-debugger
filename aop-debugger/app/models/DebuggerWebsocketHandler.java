@@ -96,14 +96,17 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 			JsonNode json = ((Message) message).data;
 			String action = json.get("action").getTextValue();
 			
-			if(action.equals("continue")) {
-				continueDebugger();
-			}
 			if(action.equals("breakpoint")) {
 				setBreakpoint(json);
 			}
 			if(action.equals("outside-debug")) {
 				setOutsideDebugging(json);
+			}
+			if(action.equals("continue")) {
+				continueDebugger();
+			}
+			if(action.equals("step")) {
+				stepDebugger();
 			}
 		}
 	}
@@ -138,7 +141,21 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		}
 	}
 	
-	private void continueDebugger() {
+	private void continueDebugger(){
+		Debugger debugger = Debugger.getInstance();
+		debugger.stepMode = false;
+		nextBreakpoint();
+	}
+	
+	private void stepDebugger(){
+		Debugger debugger = Debugger.getInstance();
+		debugger.stepMode = true;
+		nextBreakpoint();
+	}
+	
+	
+	
+	private void nextBreakpoint() {
 		synchronized(debuggedThread) {
 			debuggedThread.notify();
 		}
