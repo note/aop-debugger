@@ -22,11 +22,13 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import controllers.helpers.ReflectionHelper;
+import debugger.Debugger;
 
 public class DebuggerWebsocketHandler extends UntypedActor {
 	private static WebSocket.Out<JsonNode> out;
 	private static int counter = 0;
 	private static Thread debuggedThread;
+	private static Clazz classWithMain;
 
 	static ActorRef actor = Akka.system().actorOf(new Props(DebuggerWebsocketHandler.class));
 
@@ -44,9 +46,9 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		out = outWebsocket;
 
 		inWebsocket.onMessage(new Callback<JsonNode>() {
-			public void invoke(JsonNode event) {
+			public void invoke(JsonNode data) {
 				System.out.println("Otrzymano wiadomosc");
-				actor.tell(new Message());
+				actor.tell(new Message(data));
 			}
 		});
 	}
@@ -60,8 +62,8 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 			Set<Clazz> classes = ReflectionHelper.getMainClassesFromJar(jarToDebugURL);
 			if (classes.size() == 0)
 				throw new IllegalArgumentException("Uploaded jar does not contain main method");
-			String classNameWithMain = classes.iterator().next().getQualifiedName();
-			Class<?> cls = loader.loadClass(classNameWithMain);
+			classWithMain = classes.iterator().next();
+			Class<?> cls = loader.loadClass(classWithMain.getQualifiedName());
 			Method meth = cls.getMethod("main", String[].class);
 			String[] params = null;
 			meth.invoke(null, (Object) params);
@@ -93,13 +95,82 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof Message) {
-			synchronized (debuggedThread) {
-				debuggedThread.notify();
+			JsonNode json = ((Message) message).data;
+			String action = json.get("action").getTextValue();
+
+			if (action.equals("breakpoint")) {
+				setBreakpoint(json);
+			}
+			if (action.equals("outside-debug")) {
+				setOutsideDebugging(json);
+			}
+			if (action.equals("continue")) {
+				continueDebugger();
+			}
+			if (action.equals("step")) {
+				stepDebugger();
 			}
 		}
 	}
 
+	private void setOutsideDebugging(JsonNode json) {
+		Debugger debugger = Debugger.getInstance();
+		System.out.println(json.get("enabled").asBoolean());
+		debugger.debugOutsideJar = json.get("enabled").asBoolean();
+	}
+
+	private void setBreakpoint(JsonNode json) {
+		Debugger debugger = Debugger.getInstance();
+
+		JsonNode breakPointData = json.get("data");
+		String packageName = breakPointData.get("package").getTextValue();
+		String className = breakPointData.get("klass").getTextValue();
+		Boolean enabled = breakPointData.get("enabled").getBooleanValue();
+		String fullName;
+		if (breakPointData.has("method")) {
+			String methodName = breakPointData.get("method").getTextValue();
+			fullName = packageName + "." + className + "." + methodName;
+			if (!enabled)
+				debugger.forbiddenMethods.add(fullName);
+			else
+				debugger.forbiddenMethods.remove(fullName);
+		} else {
+			fullName = packageName + "." + className;
+			if (!enabled)
+				debugger.forbiddenClasses.add(fullName);
+			else
+				debugger.forbiddenClasses.remove(fullName);
+		}
+	}
+
+	private void continueDebugger() {
+		Debugger debugger = Debugger.getInstance();
+		debugger.stepMode = false;
+		nextBreakpoint();
+	}
+
+	private void stepDebugger() {
+		Debugger debugger = Debugger.getInstance();
+		debugger.stepMode = true;
+		nextBreakpoint();
+	}
+
+	private void nextBreakpoint() {
+		synchronized (debuggedThread) {
+			debuggedThread.notify();
+		}
+	}
+
 	public static class Message {
+		JsonNode data;
+
+		public Message(JsonNode data) {
+			this.data = data;
+		}
+	}
+
+	public static String getRootPackageOfDebuggedJar() {
+		return classWithMain.getPackageName();
 	}
 
 }

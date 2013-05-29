@@ -8,4 +8,6 @@ public interface DebuggerInterface {
 	void takeCommand(JoinPoint point, StackTraceElement[] stack);
 
 	void takeDown();
+
+	public String getRootPackageOfDebuggedJar();
 }

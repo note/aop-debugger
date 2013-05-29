@@ -25,6 +25,10 @@ public class DebuggerWeb implements DebuggerInterface {
 		}
 	}
 
+	public String getRootPackageOfDebuggedJar() {
+		return DebuggerWebsocketHandler.getRootPackageOfDebuggedJar();
+	}
+
 	public void takeDown() {
 
 	}

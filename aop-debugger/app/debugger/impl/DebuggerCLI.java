@@ -35,4 +35,10 @@ public class DebuggerCLI implements DebuggerInterface {
 
 	}
 
+	@Override
+	public String getRootPackageOfDebuggedJar() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
