@@ -5,6 +5,9 @@ import helpers.PathHelpers;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.aspectj.lang.JoinPoint;
@@ -73,15 +76,20 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		}
 	}
 
-	public static void sendBreakpointMessage(JoinPoint point, StackTraceElement[] stack, Thread thread) {
+	public static void sendBreakpointMessage(JoinPoint point, StackTraceElement[] stack, Object[] args, Thread thread) {
 		debuggedThread = thread;
 		ObjectNode breakpointJson = Json.newObject();
 		breakpointJson.put("methodName", point.getSignature().getName());
 		breakpointJson.put("signature", point.getSignature().toLongString());
 		ArrayNode arguments = breakpointJson.putArray("arguments");
 		ArrayNode stackTrace = breakpointJson.putArray("stackTrace");
-		for (Object o : point.getArgs()) {
-			arguments.add(o.toString());
+		for (Object o : args) {
+			Class klass = o.getClass();
+			ObjectNode argNode = Json.newObject();
+			argNode.put("editable", klass == String.class || klass == Integer.class);
+			argNode.put("string", o.toString());
+			argNode.put("klass", klass.getName());
+			arguments.add(argNode);
 		}
 		for (StackTraceElement o : stack) {
 			stackTrace.add(o.toString());
@@ -105,10 +113,10 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 				setOutsideDebugging(json);
 			}
 			if (action.equals("continue")) {
-				continueDebugger();
+				continueDebugger(json);
 			}
 			if (action.equals("step")) {
-				stepDebugger();
+				stepDebugger(json);
 			}
 		}
 	}
@@ -143,21 +151,32 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		}
 	}
 
-	private void continueDebugger() {
+	private void continueDebugger(JsonNode json) {
 		Debugger debugger = Debugger.getInstance();
 		debugger.stepMode = false;
-		nextBreakpoint();
+		nextBreakpoint(json);
 	}
 
-	private void stepDebugger() {
+	private void stepDebugger(JsonNode json) {
 		Debugger debugger = Debugger.getInstance();
 		debugger.stepMode = true;
-		nextBreakpoint();
+		nextBreakpoint(json);
 	}
 
-	private void nextBreakpoint() {
+	private void nextBreakpoint(JsonNode json) {
+		readArguments(json.get("arguments"));		
 		synchronized (debuggedThread) {
 			debuggedThread.notify();
+		}
+	}
+	
+	private void readArguments(JsonNode json) {
+		Debugger debugger = Debugger.getInstance();
+		Iterator<Entry<String, JsonNode>> iterator = json.getFields();
+		while(iterator.hasNext()){
+			Entry<String, JsonNode> item = iterator.next();
+			int key = Integer.parseInt(item.getKey());
+			debugger.arguments[key] = item.getValue().asText();
 		}
 	}
 

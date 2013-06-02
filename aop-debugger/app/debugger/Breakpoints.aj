@@ -1,26 +1,34 @@
 package debugger;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Pointcut;
 
-public aspect Breakpoints {
+@Aspect
+public class Breakpoints {
 
 	private JoinPoint joinPoint;
 	private Debugger debugger;
-	
-//	pointcut methodCall (): !within(debugger..*) && call(* *(..));
-	pointcut methodCall (): within(to.be.debugged..*) && call(* *(..));
-
-	// Change within(TestApp) to ! within(debugger-context)
-	
-	before() : methodCall() {
-		joinPoint = (JoinPoint)thisJoinPoint;
-		debugger = Debugger.getInstance();
 		
-		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-		debugger.takeControl(joinPoint, stack);
+	@Pointcut("within(to.be.debugged..*) && call(* *(..))")
+	void methodCall() {}
+	
 
+	@Around("methodCall()")
+	public Object rada(ProceedingJoinPoint tjp) {
+		Object[] args = tjp.getArgs();
+		try {
+			joinPoint = tjp;
+			debugger = Debugger.getInstance();
+			StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+			debugger.takeControl(joinPoint, stack, args);
+			return tjp.proceed(args);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
-	
-	
-	
 
 }
+

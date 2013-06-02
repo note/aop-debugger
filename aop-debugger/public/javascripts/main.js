@@ -7,14 +7,13 @@
     connector.bindCallback($.proxy(stackTraceView, 'onData'));
 
     $("#stepButton").click(function () {
-        connector.sendMessage({action: 'step'});
+        connector.sendMessage({action: 'step', arguments: stackTraceView.getArguments()});
         stackTraceView.clear();
     });
     $("#continueButton").click(function () {
-        connector.sendMessage({action: 'continue'});
+        connector.sendMessage({action: 'continue', arguments: stackTraceView.getArguments()});
         stackTraceView.clear();
     });
-
 
     $("#outside-debug").click(function () {
         connector.sendMessage({action: 'outside-debug', enabled: $(this).is(':checked')});

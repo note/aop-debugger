@@ -9,7 +9,7 @@ import debugger.DebuggerInterface;
 
 public class DebuggerCLI implements DebuggerInterface {
 
-	public void takeCommand(JoinPoint point, StackTraceElement[] stack) {
+	public void takeCommand(JoinPoint point, StackTraceElement[] stack, Object[] args) {
 		System.out.println("Method: " + point.getSignature().getName());
 
 		waitForInput();

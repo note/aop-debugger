@@ -28,10 +28,14 @@ public class Debugger {
 	}
 
 	// TODO: Add methods to ignore/enable classes and methods
+	
+	public Object[] arguments;
 
-	public void takeControl(JoinPoint point, StackTraceElement[] stack) {
-		if (shouldStop(point))
-			debuggerInterface.takeCommand(point, clearStack(stack));
+	public void takeControl(JoinPoint point, StackTraceElement[] stack, Object[] args) {
+		if (shouldStop(point)) {
+			arguments = args;
+			debuggerInterface.takeCommand(point, clearStack(stack), arguments);
+		}
 	}
 
 	StackTraceElement[] clearStack(StackTraceElement[] stack) {

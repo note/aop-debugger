@@ -14,9 +14,9 @@ public class DebuggerWeb implements DebuggerInterface {
 
 	}
 
-	public void takeCommand(JoinPoint point, StackTraceElement[] stack) {
+	public void takeCommand(JoinPoint point, StackTraceElement[] stack, Object[] args) {
 		Thread thread = Thread.currentThread();
-		DebuggerWebsocketHandler.sendBreakpointMessage(point, stack, thread);
+		DebuggerWebsocketHandler.sendBreakpointMessage(point, stack, args, thread);
 		synchronized (thread) {
 			try {
 				Thread.currentThread().wait();
