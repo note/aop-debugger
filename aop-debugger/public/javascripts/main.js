@@ -6,15 +6,6 @@
 
     connector.bindCallback($.proxy(stackTraceView, 'onData'));
 
-    $("#stepButton").click(function () {
-        connector.sendMessage({action: 'step', arguments: stackTraceView.getArguments()});
-        stackTraceView.clear();
-    });
-    $("#continueButton").click(function () {
-        connector.sendMessage({action: 'continue', arguments: stackTraceView.getArguments()});
-        stackTraceView.clear();
-    });
-
     $("#outside-debug").click(function () {
         connector.sendMessage({action: 'outside-debug', enabled: $(this).is(':checked')});
     });
@@ -24,5 +15,14 @@
     methodSelector.addCallback(function (data) {
         connector.sendMessage({action: 'breakpoint', data: data});
     });
+
+    var continueMessage = function(action){
+        return function(){
+            connector.sendMessage({action: action, arguments: stackTraceView.getArguments()});
+            stackTraceView.clear();
+        };
+    };
+    $("#stepButton").click(continueMessage('step'));
+    $("#continueButton").click(continueMessage('continue'));
 
 })();

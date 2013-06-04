@@ -17,18 +17,25 @@ body {
     margin-left: 20px;
 }
 
-.klass > .name {
+.klass {
+    margin-left: 25px;
+}
 
-    background-image: url(../images/classes.gif);
+.package .name {
     background-repeat: no-repeat;
     padding-left: 18px;
 }
 
-.method > .name {
+.klass > .name {
+    background-image: url(../images/classes.gif);
+}
 
+.method > .name {
     background-image: url(../images/brkpi_obj.gif);
-    background-repeat: no-repeat;
-    padding-left: 18px;
+}
+
+.package > .name {
+    background-image: url(../images/package_obj.gif);
 }
 
 #tree input {

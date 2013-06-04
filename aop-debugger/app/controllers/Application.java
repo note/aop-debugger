@@ -41,7 +41,7 @@ public class Application extends Controller {
 			File copiedFile = copyToUploads(uploadedJar);
 
 			Set<Clazz> classesFromJar = ReflectionHelper.getClassesFromJar(copiedFile);
-			return ok(debugger.render(uploadedJar.getFilename(), classesFromJar));
+			return ok(debugger.render(uploadedJar.getFilename(), Clazz.sortByPackage(classesFromJar)));
 		} else {
 			flash("error", "Missing file");
 			return redirect(routes.Application.index());

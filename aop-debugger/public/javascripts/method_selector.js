@@ -31,6 +31,10 @@
                     methodName = $this.data('method'),
                     className = $this.data('klass'),
                     packageName = $this.data('package');
+                if(!className) {
+                    self.changePackage(packageName, enabled);
+                    return;
+                }
 
                 if (methodName) {
                     self.changeMethod(packageName, className, methodName, enabled);
@@ -51,6 +55,12 @@
             this.runCallback({
                 package: packageName,
                 klass: className,
+                enabled: enabled
+            });
+        },
+        changePackage: function(packageName, enabled) {
+            this.runCallback({
+                package: packageName,
                 enabled: enabled
             });
         }

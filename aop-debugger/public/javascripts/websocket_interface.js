@@ -41,9 +41,10 @@
             this.stackTraceEl.val(data.stackTrace.join("\n"));
             this.methodNameEl.text(data.signature);
             $.each(data.arguments, function (i, argument) {
+                console.log(argument);
                 var input = $('<input>', {
                     value: argument.string,
-                    disabled: argument.klass != "java.lang.String",
+                    disabled: !argument.editable,
                     'data-number': i,
                     'data-initial': argument.string
                 });

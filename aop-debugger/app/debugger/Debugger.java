@@ -14,6 +14,7 @@ public class Debugger {
 	public boolean stepMode = false;
 	public boolean debugOutsideJar = true;
 
+	public Set<String> forbiddenPackages = new HashSet<String>();
 	public Set<String> forbiddenClasses = new HashSet<String>();
 	public Set<String> forbiddenMethods = new HashSet<String>();
 
@@ -28,10 +29,11 @@ public class Debugger {
 	}
 
 	// TODO: Add methods to ignore/enable classes and methods
-	
+
 	public Object[] arguments;
 
-	public void takeControl(JoinPoint point, StackTraceElement[] stack, Object[] args) {
+	public void takeControl(JoinPoint point, StackTraceElement[] stack,
+			Object[] args) {
 		if (shouldStop(point)) {
 			arguments = args;
 			debuggerInterface.takeCommand(point, clearStack(stack), arguments);
@@ -54,9 +56,9 @@ public class Debugger {
 		String className = type.getSimpleName();
 		String packageName = type.getPackage().getName();
 		String methodName = point.getSignature().getName();
-		if (forbiddenClasses.contains(packageName + "." + className))
-			return false;
-		if (forbiddenMethods.contains(packageName + "." + className + "." + methodName))
+		if (forbiddenPackages.contains(packageName)
+				|| forbiddenClasses.contains(packageName + "." + className)
+				|| forbiddenMethods.contains(packageName + "." + className + "." + methodName))
 			return false;
 		String jarPackage = debuggerInterface.getRootPackageOfDebuggedJar();
 		if (!debugOutsideJar) {

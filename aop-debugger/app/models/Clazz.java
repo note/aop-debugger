@@ -2,6 +2,9 @@ package models;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 
@@ -12,6 +15,19 @@ import com.google.common.collect.Sets;
 public class Clazz implements Type {
 	private Set<MyMethod> methods = Sets.newHashSet();
 	private Class<?> clazz;
+	
+	public static Map<String, ArrayList<Clazz>> sortByPackage(Set<Clazz> klasses) {
+		Map<String, ArrayList<Clazz>> out = new HashMap<String, ArrayList<Clazz>>();
+		for(Clazz klass : klasses) {
+			String packageName = klass.getPackageName();
+			if(!out.containsKey(packageName)) {
+				out.put(packageName, new ArrayList<Clazz>());
+			}
+			out.get(packageName).add(klass);
+		}
+		
+		return out;
+	}
 
 	public Clazz(ZipEntry zipEntry, ClassLoader loader) {
 		try {

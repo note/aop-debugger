@@ -1,4 +1,4 @@
-@(jarToDebug: String, classes: Set[Clazz])
+@(jarToDebug: String, classes: java.util.Map[String, ArrayList[Clazz]])
 
 @main("Debugger"){
 
@@ -24,7 +24,11 @@
     <div class="span4">
         <h3>Breakpoints selector</h3>
         <div id="tree">
-            @for(klass <- classes) {
+        @for((packageName, classesByPackage) <- classes) {
+        	<div class="package">
+        	<input type="checkbox" data-package=@packageName checked autocomplete="off"/>
+            <span class="name">@packageName</span>
+            @for(klass <- classesByPackage) {
                 <div class="klass">
                     <input type="checkbox" data-package=@klass.getPackageName() data-klass=@klass.getName() checked autocomplete="off"/>
                     <span class="name">@klass.getName()</span>
@@ -37,6 +41,8 @@
 						}
                     </div>
                 </div>
+            }
+            </div>
             }
         </div>
         <h3>Options</h3>

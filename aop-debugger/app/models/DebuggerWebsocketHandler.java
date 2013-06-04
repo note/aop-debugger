@@ -132,8 +132,18 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 		JsonNode breakPointData = json.get("data");
 		String packageName = breakPointData.get("package").getTextValue();
-		String className = breakPointData.get("klass").getTextValue();
 		Boolean enabled = breakPointData.get("enabled").getBooleanValue();
+		if(!breakPointData.has("klass")) {
+			if(!enabled)
+				debugger.forbiddenPackages.add(packageName);
+			else
+				debugger.forbiddenPackages.remove(packageName);
+			
+			return;
+		}
+		String className = breakPointData.get("klass").getTextValue();
+		
+		
 		String fullName;
 		if (breakPointData.has("method")) {
 			String methodName = breakPointData.get("method").getTextValue();
@@ -176,7 +186,13 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		while(iterator.hasNext()){
 			Entry<String, JsonNode> item = iterator.next();
 			int key = Integer.parseInt(item.getKey());
-			debugger.arguments[key] = item.getValue().asText();
+			Class argumentClass = debugger.arguments[key].getClass();
+			if(argumentClass == String.class)
+				debugger.arguments[key] = item.getValue().asText();
+			if(argumentClass == Float.class || argumentClass == Double.class)
+				debugger.arguments[key] = item.getValue().asDouble();
+			if(argumentClass == Integer.class)
+				debugger.arguments[key] = item.getValue().asInt();
 		}
 	}
 
