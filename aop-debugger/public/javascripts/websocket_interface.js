@@ -66,5 +66,22 @@
     };
 
     global.StackTraceView = StackTraceView;
+    
+    var StandardOutput = function () {
+        this.standardOutputEl = $('#standardOutput');
+    };
+    
+    StandardOutput.prototype = {
+		onData: function (data) {
+			this.clear();
+			this.standardOutputEl.val(data.standardOutput);
+		},
+    
+    	clear: function () {
+    		this.standardOutputEl.val('');
+    	}
+    };
+    
+    global.StandardOutput = StandardOutput;
 
 })(jQuery, this);

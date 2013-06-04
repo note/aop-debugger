@@ -1,18 +1,12 @@
 package models;
 
-import helpers.PathHelpers;
-
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.SourceLocation;
-import org.aspectj.weaver.loadtime.WeavingURLClassLoader;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
@@ -21,10 +15,15 @@ import play.libs.Akka;
 import play.libs.F.Callback;
 import play.libs.Json;
 import play.mvc.WebSocket;
+import streams.ThreadPrintStream;
+import threads.DebuggedProgramThread;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import controllers.helpers.ReflectionHelper;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+
 import debugger.Debugger;
 
 public class DebuggerWebsocketHandler extends UntypedActor {
@@ -37,12 +36,14 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 
 	public static void register(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket, final String jarToDebug) {
 		handleWebsockets(inWebsocket, outWebsocket);
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				invokeMainMethod(jarToDebug);
-			}
-		}).start();
+
+		// We have to replaceSystemOut in this thread to enable newly created
+		// thread to operate on System.out as ThreadPrintStream
+		ThreadPrintStream.replaceSystemOut();
+
+		DebuggedProgramThread debugged = new DebuggedProgramThread(jarToDebug);
+		classWithMain = debugged.getClassWithMain();
+		new Thread(debugged).start();
 	}
 
 	private static void handleWebsockets(WebSocket.In<JsonNode> inWebsocket, WebSocket.Out<JsonNode> outWebsocket) {
@@ -54,26 +55,6 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 				actor.tell(new Message(data));
 			}
 		});
-	}
-
-	private static void invokeMainMethod(final String jarToDebug) {
-		try {
-			URL jarToDebugURL = new URL(PathHelpers.getUploadsURL() + jarToDebug);
-			URL[] url = { jarToDebugURL, new URL(PathHelpers.getPwdURL() + "debugger.jar") };
-			URLClassLoader loader = new URLClassLoader(url, DebuggerWebsocketHandler.class.getClassLoader());
-			WeavingURLClassLoader weaver = new WeavingURLClassLoader(loader);
-			Set<Clazz> classes = ReflectionHelper.getMainClassesFromJar(jarToDebugURL);
-			if (classes.size() == 0)
-				throw new IllegalArgumentException("Uploaded jar does not contain main method");
-			classWithMain = classes.iterator().next();
-			Class<?> cls = loader.loadClass(classWithMain.getQualifiedName());
-			Method meth = cls.getMethod("main", String[].class);
-			String[] params = null;
-			meth.invoke(null, (Object) params);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public static void sendBreakpointMessage(JoinPoint point, StackTraceElement[] stack, Object[] args, Thread thread) {
@@ -96,8 +77,18 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 		}
 		SourceLocation location = point.getSourceLocation();
 		breakpointJson.put("sourceLocation", location.getFileName() + ":" + location.getLine());
+		try {
+			breakpointJson.put("standardOutput", getOutputForThread(thread));
+		} catch (IOException e) {
+			breakpointJson.put("standardOutput", "");
+		}
 
 		out.write(breakpointJson);
+	}
+
+	private static String getOutputForThread(Thread thread) throws IOException {
+		String content = Files.toString(new File(DebuggedProgramThread.getOutputFilePathForCurrentThread()), Charsets.UTF_8);
+		return content;
 	}
 
 	@Override
@@ -164,16 +155,16 @@ public class DebuggerWebsocketHandler extends UntypedActor {
 	}
 
 	private void nextBreakpoint(JsonNode json) {
-		readArguments(json.get("arguments"));		
+		readArguments(json.get("arguments"));
 		synchronized (debuggedThread) {
 			debuggedThread.notify();
 		}
 	}
-	
+
 	private void readArguments(JsonNode json) {
 		Debugger debugger = Debugger.getInstance();
 		Iterator<Entry<String, JsonNode>> iterator = json.getFields();
-		while(iterator.hasNext()){
+		while (iterator.hasNext()) {
 			Entry<String, JsonNode> item = iterator.next();
 			int key = Integer.parseInt(item.getKey());
 			debugger.arguments[key] = item.getValue().asText();
