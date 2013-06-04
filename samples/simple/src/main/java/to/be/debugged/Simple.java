@@ -3,11 +3,12 @@ package to.be.debugged;
 public class Simple {
 
 	public static void main(String[] argv) {
-		while(true) {
-		System.out.println("Bazinga456!");
-		int intRes = addIntegers(34, 55);
-		Person person = new Person("Adam", "Nowak");
-		person.greet();
+		while (true) {
+			System.out.println("Bazinga456!");
+			System.out.println("lorem ipsum");
+			int intRes = addIntegers(34, 55);
+			Person person = new Person("Adam", "Nowak");
+			person.greet();
 		}
 	}
 
